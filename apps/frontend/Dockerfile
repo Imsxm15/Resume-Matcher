@@ -1,41 +1,35 @@
 # apps/frontend/Dockerfile
-# Stage 1: Dépendances
-FROM node:18-alpine AS deps
+FROM node:18-alpine AS builder
+
 WORKDIR /app
-COPY package.json package-lock.json* ./
+
+# Installation des dépendances
+COPY package.json package-lock.json ./
+# Utilisation de npm ci pour une installation propre et rapide
 RUN npm ci
 
-# Stage 2: Builder
-FROM node:18-alpine AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# Copie du reste des fichiers sources
 COPY . .
 
-# Désactivation de la télémétrie Next.js pour le build
-ENV NEXT_TELEMETRY_DISABLED=1
-# Variable d'environnement nécessaire au build (sera surchargée au runtime pour le client)
-ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+# ARG pour passer l'URL de l'API au moment du build
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
+# Build de l'application Next.js
 RUN npm run build
 
-# Stage 3: Runner (Production)
+# --- Étape de production (Runner) ---
 FROM node:18-alpine AS runner
+
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Copie des fichiers nécessaires pour exécuter l'app standalone (si configuré) ou standard
+# Copie des fichiers nécessaires depuis l'étape de build
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-
-USER nextjs
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["node", "server.js"]
