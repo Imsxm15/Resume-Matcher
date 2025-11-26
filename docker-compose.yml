@@ -1,0 +1,42 @@
+services:
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: resume-matcher-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.docker
+    volumes:
+      # Persistance de la base de données SQLite
+      - sqlite_data:/data
+      # (Optionnel) Montage pour le développement live si besoin :
+      # - ./apps/backend:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+    container_name: resume-matcher-frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.docker
+    environment:
+      # Assure que le frontend pointe vers le port exposé du backend
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
+    driver: local
