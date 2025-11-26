@@ -1,42 +1,56 @@
+version: '3.8'
+
 services:
   backend:
-    build:
-      context: ./apps/backend
-      dockerfile: Dockerfile
-    container_name: resume-matcher-backend
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env.docker
+    build: ./apps/backend
+    container_name: resume_matcher_backend
+    restart: unless-stopped
+    environment:
+      # Configuration Base de données (Persistance)
+      - SYNC_DATABASE_URL=sqlite:////data/app.db
+      - ASYNC_DATABASE_URL=sqlite+aiosqlite:////data/app.db
+      
+      # Configuration OpenAI (Variables critiques)
+      - LLM_PROVIDER=openai
+      - EMBEDDING_PROVIDER=openai
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Modèles choisis (ajustables selon tes préférences/coûts)
+      - LL_MODEL=gpt-4o-mini
+      - EMBEDDING_MODEL=text-embedding-3-small
+      
+      # Sécurité
+      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY}
     volumes:
       # Persistance de la base de données SQLite
-      - sqlite_data:/data
-      # (Optionnel) Montage pour le développement live si besoin :
-      # - ./apps/backend:/app
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - ./docker-data/db:/data
+    networks:
+      - app-network
 
   frontend:
     build:
       context: ./apps/frontend
-      dockerfile: Dockerfile
-    container_name: resume-matcher-frontend
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env.docker
-    environment:
-      # Assure que le frontend pointe vers le port exposé du backend
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-    depends_on:
-      backend:
-        condition: service_started
+      args:
+        # Configuration de l'URL publique (Ton IP Hostinger)
+        - NEXT_PUBLIC_API_URL=http://31.97.176.215
+    container_name: resume_matcher_frontend
     restart: unless-stopped
+    networks:
+      - app-network
 
-volumes:
-  sqlite_data:
-    driver: local
+  nginx:
+    image: nginx:alpine
+    container_name: resume_matcher_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
