@@ -42,14 +42,14 @@ make run-dev
 - **PowerShell** 5.1 or later
 - **Node.js** ≥ v18 (includes `npm`)
 - **Python** ≥ 3.8 (`python3`, `pip3`)
-- **winget** (recommended for Ollama installation)
+- **winget** (optional, for automated installs)
 - **uv** (will be auto-installed by setup.ps1 if missing)
 
 ### Linux/macOS
 - **Bash** 4.4 or higher
 - **Node.js** ≥ v18 (includes `npm`)
 - **Python** ≥ 3.8 (`python3`, `pip3`)
-- **curl** (for installing uv & Ollama)
+- **curl** (for installing uv)
 - **make** (for Makefile integration)
 
 ### Installing Prerequisites
@@ -68,7 +68,6 @@ winget install Python.Python.3.12
 **Or download manually from official sites:**
 - **Node.js**: Download from [https://nodejs.org/](https://nodejs.org/) (LTS version recommended)
 - **Python**: Download from [https://www.python.org/downloads/](https://www.python.org/downloads/) (v3.8+ required)
-- **Ollama**: Only required if you switch the backend providers to `ollama`. Otherwise you can skip installing it. If you do need it, download from [https://ollama.com/download/windows](https://ollama.com/download/windows)
 
 **On macOS**, you can install missing tools via Homebrew:
 
@@ -112,14 +111,7 @@ You can customize any variables in these files before or after bootstrapping.
 
  Note: Before You Run `setup.sh`
 
- If you leave the default OpenAI configuration in place, no local model server is required.
- When switching `LLM_PROVIDER` or `EMBEDDING_PROVIDER` to `ollama`, ensure that [Ollama](https://ollama.com/) is installed and running. Start it manually via:
-
- ```bash
- ollama serve
- ```
-
- Without the Ollama daemon running the setup script cannot pull local models.
+ With the default OpenAI configuration you only need to provide `OPENAI_API_KEY` (or both `LLM_API_KEY` and `EMBEDDING_API_KEY`). No local model server is required.
  
 ### Windows Installation
 
@@ -139,8 +131,7 @@ You can customize any variables in these files before or after bootstrapping.
    This will:
 
    - Verify/install prerequisites (`node`, `npm`, `python3`, `pip3`, `uv`)
-   - Install Ollama via winget (if not present)
-   - Pull the `gemma3:4b` model via Ollama
+   - Ensure `OPENAI_API_KEY` (or `LLM_API_KEY`/`EMBEDDING_API_KEY`) is set
    - Bootstrap root & backend `.env` files
    - Install Node.js deps (`npm ci`) at root and frontend
    - Sync Python deps in `apps/backend` via `uv sync`
@@ -181,8 +172,8 @@ You can customize any variables in these files before or after bootstrapping.
 
    This will:
 
-   - Verify/install prerequisites (`node`, `npm`, `python3`, `pip3`, `uv`, `ollama`)
-   - Pull the `gemma3:4b` model via Ollama
+   - Verify/install prerequisites (`node`, `npm`, `python3`, `pip3`, `uv`)
+   - Check for required OpenAI environment variables
    - Bootstrap root & backend `.env` files
    - Install Node.js deps (`npm ci`) at root and frontend
    - Sync Python deps in `apps/backend` via `uv sync`
@@ -239,13 +230,13 @@ You can customize any variables in these files before or after bootstrapping.
 
   - Install App Installer from Microsoft Store or update Windows 10/11.
 
-- **`Ollama installation failed`**:
-
-  - Download and install manually from [https://ollama.com/download/windows](https://ollama.com/download/windows).
-
 - **`uv: command not found`** after installation:
 
   - Restart your PowerShell terminal and try again.
+
+- **`Missing OpenAI API key`**:
+
+  - Set `OPENAI_API_KEY` (or both `LLM_API_KEY` and `EMBEDDING_API_KEY`) before running the backend or Docker containers.
 
 ### Cross-platform Issues
 
@@ -257,9 +248,9 @@ You can customize any variables in these files before or after bootstrapping.
 
   - Ensure `~/.local/bin` is in your `$PATH`.
 
-- **`ollama: command not found`** on Linux:
+- **`Missing OpenAI API key`** on Linux/macOS:
 
-  - Verify the installer script ran, or install manually via package manager.
+  - Export `OPENAI_API_KEY` in your shell or populate it in `.env`/`.env.docker`.
 
 - **`npm ci` errors**:
   - Check your `package-lock.json` is in sync with `package.json`.

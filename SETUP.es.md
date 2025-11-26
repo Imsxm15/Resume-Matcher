@@ -31,7 +31,7 @@ Antes de ejecutar `setup.sh`, asegúrate de tener:
   - **Bash** 4.4 o superior
   - **Node.js** ≥ v18 (incluye `npm`)
   - **Python** ≥ 3.8 (`python3`, `pip3`)
-  - **curl** (para instalar uv y Ollama)
+  - **curl** (para instalar uv)
   - **make** (para la integración con Makefile)
 
 En **macOS**, puedes instalar las herramientas que falten a través de Homebrew:
@@ -95,8 +95,8 @@ Puedes personalizar cualquier variable en estos archivos antes o después de la 
 
     Esto hará lo siguiente:
 
-      - Verificar/instalar prerrequisitos (`node`, `npm`, `python3`, `pip3`, `uv`, `ollama`).
-      - Descargar el modelo `gemma3:4b` a través de Ollama.
+      - Verificar/instalar prerrequisitos (`node`, `npm`, `python3`, `pip3`, `uv`).
+      - Confirmar que las variables de entorno de OpenAI están definidas (`OPENAI_API_KEY` o `LLM_API_KEY`/`EMBEDDING_API_KEY`).
       - Inicializar los archivos `.env` en la raíz y en el backend.
       - Instalar dependencias de Node.js (`npm ci`) en la raíz y en el frontend.
       - Sincronizar dependencias de Python en `apps/backend` a través de `uv sync`.
@@ -142,9 +142,9 @@ Puedes personalizar cualquier variable en estos archivos antes o después de la 
 
       - Asegúrate de que `~/.local/bin` esté en tu `$PATH`.
 
-  - **`ollama: command not found`** en Linux:
+  - **`Falta la clave de API de OpenAI`**:
 
-      - Verifica que el script de instalación se haya ejecutado, o instálalo manualmente a través del gestor de paquetes.
+      - Exporta `OPENAI_API_KEY` en tu shell o añádelo a `.env`/`.env.docker` antes de ejecutar el backend o Docker.
 
   - **Errores de `npm ci`**:
 

@@ -1,9 +1,9 @@
-import os
 from typing import Dict, Any
 
 from ..core import settings
 from .strategies.wrapper import JSONWrapper, MDWrapper
 from .providers.base import Provider, EmbeddingProvider
+from .exceptions import ProviderError
 
 class AgentManager:
     def __init__(self,
@@ -31,15 +31,14 @@ class AgentManager:
             case 'openai':
                 from .providers.openai import OpenAIProvider
                 api_key = opts.get("llm_api_key", settings.LLM_API_KEY)
+                base_url = opts.get("llm_base_url", settings.LLM_BASE_URL)
                 return OpenAIProvider(model_name=self.model,
                                       api_key=api_key,
-                                      opts=opts)
-            case 'ollama':
-                from .providers.ollama import OllamaProvider
-                model = opts.get("model", self.model)
-                return OllamaProvider(model_name=model,
+                                      api_base_url=base_url,
                                       opts=opts)
             case _:
+                if not self.model_provider:
+                    raise ProviderError("LLM_PROVIDER must be set. Supported values: openai or a llama_index provider class.")
                 from .providers.llama_index import LlamaIndexProvider
                 llm_api_key = opts.get("llm_api_key", settings.LLM_API_KEY)
                 llm_api_base_url = opts.get("llm_base_url", settings.LLM_BASE_URL)
@@ -70,17 +69,20 @@ class EmbeddingManager:
             case 'openai':
                 from .providers.openai import OpenAIEmbeddingProvider
                 api_key = kwargs.get("openai_api_key", settings.EMBEDDING_API_KEY)
-                return OpenAIEmbeddingProvider(api_key=api_key, embedding_model=self._model)
-            case 'ollama':
-                from .providers.ollama import OllamaEmbeddingProvider
-                model = kwargs.get("embedding_model", self._model)
-                return OllamaEmbeddingProvider(embedding_model=model)
+                base_url = kwargs.get("embedding_base_url", settings.EMBEDDING_BASE_URL)
+                return OpenAIEmbeddingProvider(api_key=api_key,
+                                               api_base_url=base_url,
+                                               embedding_model=self._model)
             case _:
+                if not self._model_provider:
+                    raise ProviderError("EMBEDDING_PROVIDER must be set. Supported values: openai or a llama_index provider class.")
                 from .providers.llama_index import LlamaIndexEmbeddingProvider
                 embed_api_key = kwargs.get("embedding_api_key", settings.EMBEDDING_API_KEY)
+                embed_base_url = kwargs.get("embedding_base_url", settings.EMBEDDING_BASE_URL)
                 return LlamaIndexEmbeddingProvider(api_key=embed_api_key,
                                                    provider=self._model_provider,
-                                                   embedding_model=self._model)
+                                                   embedding_model=self._model,
+                                                   api_base_url=embed_base_url)
 
     async def embed(self, text: str, **kwargs: Any) -> list[float]:
         """
