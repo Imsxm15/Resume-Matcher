@@ -50,7 +50,7 @@ We're actively working on improving the platform, building towards a **VS Code f
 
 ![resume_matcher_features](assets/resume_matcher_features.png)
 
-- **Works locally**: No need to upload your resume to a server. Everything runs on your machine with open source AI models by Ollama.
+- **OpenAI-powered**: Bring your own OpenAI API key; all requests go directly from your environment to OpenAI's API.
 - **ATS Compatibility**: Get a detailed analysis of your resume's compatibility with ATS systems.
 - **Instant Match Score**: Upload resume & job description for a quick match score and key improvement areas.
 - **Keyword Optimizer**: Align your resume with job keywords and identify critical content gaps.
@@ -74,7 +74,7 @@ The project is built using:
 
 - FastAPI for the backend.
 - Next.js for the frontend.
-- Ollama for local AI model serving.
+- OpenAI API for model inference.
 - Tailwind CSS for styling.
 - SQLite for the database.
 
@@ -82,7 +82,7 @@ The project is built using:
 |--------------|---------------------------------------|
 | Python      | 3.12+                   |
 | Next.js      | 15+                   |
-| Ollama       |        0.6.7        |
+| OpenAI API   |      Latest (configurable)      |
 
 ## Join Us and Contribute
 

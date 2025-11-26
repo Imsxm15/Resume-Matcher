@@ -27,41 +27,22 @@ models are models that turn text into a series of numbers that can be
 compared by Resume-Matcher to find similarities. Both types of models
 are needed for Resume-Matcher to work.
 
-## "ollama" provider
-The provided `.env.sample` now defaults to the OpenAI APIs. If you
-prefer to run everything locally, set both `LLM_PROVIDER` and
-`EMBEDDING_PROVIDER` to `"ollama"`. In that case you will just need to
-set `LL_MODEL` and `EMBEDDING_MODEL` to a name shown in the output of
-the `ollama list` command. `EMBEDDING_MODEL` must be the Ollama name of
-a model capable of doing embeddings. `LL_MODEL` must be the Ollama name
-of a model capable of doing completions.
+## OpenAI (par défaut)
 
-To find a full list of models available in Ollama, go to
-www.ollama.com. To download one of those models to your local computer
-for use, run
-```bash
-ollama pull <Ollama name>
-```
-For example, if you want to use bge-m3, you could run
-```bash
-ollama pull bge-m3:latest
-```
-and then set EMBEDDING_MODEL="bge-m3:latest".
+Le fichier `.env.sample` est pré-configuré pour utiliser l'API OpenAI.
+Fournissez votre clé via la variable d'environnement `OPENAI_API_KEY`
+ou, si vous préférez, renseignez `LLM_API_KEY` et `EMBEDDING_API_KEY`.
+Choisissez ensuite les modèles souhaités :
 
-## "openai" provider
+    LL_MODEL="gpt-4o-mini"
+    EMBEDDING_MODEL="text-embedding-3-small"
 
-Setting `LLM_PROVIDER="openai"` (the value already present in
-`.env.sample`) uses the OpenAI API. Supply your key through either the
-shared `OPENAI_API_KEY` environment variable or by populating
-`LLM_API_KEY` and `EMBEDDING_API_KEY`. Then pick the desired models, for
-example:
+Vous aurez besoin de crédits dans votre compte OpenAI pour couvrir les
+coûts d'inférence. Si vous utilisez une passerelle compatible (Azure
+OpenAI, API proxy), renseignez également `LLM_BASE_URL` et
+`EMBEDDING_BASE_URL`.
 
-    LL_MODEL="gpt-4.1-mini"
-    EMBEDDING_MODEL="text-embedding-3-large"
-
-You will need credit in your OpenAI account for inference charges.
-
-## LlamaIndex providers
+## Providers LlamaIndex
 
 The third option for LLM_PROVIDER is really a collection of options. You
 can take the fully-qualified Python class name of any LlamaIndex llms
@@ -91,7 +72,7 @@ LLM_API_KEY="<your openrouter API key>"
 Note: OpenRouter in particular does not facilitate any embedding
 models, so you will need to have another provider for the embedding
 model. It is perfectly acceptable to run an OpenRouter LLM with an
-Ollama or OpenAI embedding model - mix and match is fine.
+OpenAI embedding model—mix and match is fine.
 
 Some LlamaIndex providers such as
 llama_index.llms.openai_like.OpenAILike or
