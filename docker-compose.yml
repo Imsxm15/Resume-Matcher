@@ -1,43 +1,44 @@
-version: '3.8'
-
 services:
   backend:
     build:
       context: ./apps/backend
-    restart: unless-stopped
-    env_file:
-      - .env.docker
+      dockerfile: Dockerfile
+    restart: always
     environment:
+      # --- Configuration OpenAI Forcée ---
+      - LLM_PROVIDER=openai
+      - EMBEDDING_PROVIDER=openai
+      - LL_MODEL=gpt-4o-mini
+      - EMBEDDING_MODEL=text-embedding-3-small
+      # --- Clés API (Injectées par Hostinger ou .env) ---
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - LLM_API_KEY=${LLM_API_KEY}
-      - EMBEDDING_API_KEY=${EMBEDDING_API_KEY}
-      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY}
-      - SYNC_DATABASE_URL=${SYNC_DATABASE_URL}
-      - ASYNC_DATABASE_URL=${ASYNC_DATABASE_URL}
-      - LLM_PROVIDER=${LLM_PROVIDER}
-      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER}
-      - LL_MODEL=${LL_MODEL}
-      - EMBEDDING_MODEL=${EMBEDDING_MODEL}
+      - LLM_API_KEY=${OPENAI_API_KEY}
+      - EMBEDDING_API_KEY=${OPENAI_API_KEY}
+      # --- Base de données ---
+      - SYNC_DATABASE_URL=sqlite:////data/app.db
+      - ASYNC_DATABASE_URL=sqlite+aiosqlite:////data/app.db
+      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:-insecure_secret_change_me}
     volumes:
-      - backend-data:/data
+      - backend_data:/data
     ports:
       - "8000:8000"
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
   frontend:
     build:
       context: ./apps/frontend
+      dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
-    restart: unless-stopped
-    env_file:
-      - .env.docker
-    environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        # IMPORTANT : C'est ici qu'on dit au frontend où est le backend
+        # Remplace par l'IP de ton VPS si tu n'utilises pas localhost
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    restart: always
     ports:
       - "3000:3000"
+    environment:
+      # URL pour les appels serveur interne (Server Side Rendering)
+      - NEXT_PUBLIC_API_URL=http://backend:8000
     depends_on:
       - backend
 
 volumes:
-  backend-data:
+  backend_data:
