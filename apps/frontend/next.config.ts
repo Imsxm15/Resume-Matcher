@@ -1,14 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // On ignore les erreurs de style et de typage pour que le build Docker passe
+  // INDISPENSABLE pour le Dockerfile
+  output: "standalone",
+  
+  // On ignore les erreurs strictes pour que le build passe en prod
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,
   },
-  /* config options here */
   async rewrites() {
     return [
       {
